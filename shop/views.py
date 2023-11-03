@@ -78,22 +78,18 @@ def return_item(request, order_item_id):
 def confirm_return(request, return_id):
     return_obj = Return.objects.get(id=return_id)
 
-    if return_obj.status == 'на розгляді':  # Якщо статус ще на розгляді, можна обробити повернення
-        # Отримаймо інформацію про покупку та користувача
+    if return_obj.status == 'на розгляді':
         order_item = return_obj.purchase
         user = order_item.user
 
-        # Повернення грошей користувачу
         user_profile = UserProfile.objects.get(user=user)
         user_profile.balance += order_item.product.price * order_item.quantity
         user_profile.save()
 
-        # Повернення кількості товару на склад
         product = order_item.product
         product.quantity += order_item.quantity
         product.save()
 
-        # Оновлення інформації про повернення
         return_obj.status = 'підтверджено'
         return_obj.admin_approved = True
         return_obj.save()
